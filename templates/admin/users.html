@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Users — NMIT Library{% endblock %}
+{% block content %}
+<div class="page-header">
+<span class="page-tag">ADMIN</span>
+<h1 class="page-title">Users</h1>
+<p class="page-desc">Members of your library community.</p>
+</div>
+<div class="table-wrap">
+<table class="data-table">
+<thead><tr><th>NAME</th><th>EMAIL</th><th>ROLE</th><th>PROVIDER</th><th>JOINED</th><th>ACTIONS</th></tr></thead>
+<tbody>
+{% for user in users %}
+<tr>
+<td>{{ user.name }}</td>
+<td>{{ user.email }}</td>
+<td><span class="role-badge role-{{ user.role }}">{{ user.role|capitalize }}</span></td>
+<td>{{ user.provider }}</td>
+<td>{{ user.created_at|format_date }}</td>
+<td>
+<form method="POST" action="{{ url_for('admin_delete_user', user_id=user.id) }}" style="display:inline" onsubmit="return confirm('Delete this user?')">
+<button type="submit" class="icon-btn icon-btn-danger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+</form>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}

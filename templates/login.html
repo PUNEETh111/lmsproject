@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — NMIT Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-body">
+<div class="auth-container">
+<div class="auth-left">
+<a href="/" class="auth-logo"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> NMIT Library</a>
+<div class="auth-hero-text">
+<h1 class="auth-tagline">A quiet corner for <em class="gold-italic">curious minds</em>.</h1>
+<p class="auth-subtitle">Borrow classics, scientific journals, and engineering tomes.<br>Manage your reading like a true scholar.</p>
+</div>
+</div>
+<div class="auth-right">
+<div class="auth-form-wrapper">
+<h2 class="auth-title">Welcome back</h2>
+<p class="auth-desc">Sign in to continue your journey.</p>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="flash flash-{{ category }}">{{ message }}</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+<form method="POST" class="auth-form">
+<label class="form-label">EMAIL</label>
+<input type="email" name="email" placeholder="you@library.com" required class="form-input">
+<label class="form-label">PASSWORD</label>
+<input type="password" name="password" placeholder="••••••••" required class="form-input">
+<button type="submit" class="btn btn-gold btn-block">Sign in</button>
+</form>
+<div class="auth-divider"><span>OR</span></div>
+<button class="btn btn-outline btn-block" disabled>Continue with Google</button>
+<p class="auth-switch">Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+<div class="demo-creds">
+<strong>Demo credentials</strong><br>
+Admin: admin@library.com / admin123<br>
+Student: student@library.com / student123
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

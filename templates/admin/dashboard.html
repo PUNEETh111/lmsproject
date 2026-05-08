@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — NMIT Library{% endblock %}
+{% block content %}
+<div class="page-header">
+<span class="page-tag">ADMIN</span>
+<h1 class="page-title">Dashboard</h1>
+<p class="page-desc">A view of your library at a glance.</p>
+</div>
+<div class="stats-grid">
+<div class="stat-card">
+<div class="stat-info"><span class="stat-label">TOTAL BOOKS</span><span class="stat-value">{{ total_books }}</span></div>
+<div class="stat-icon book-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+</div>
+<div class="stat-card">
+<div class="stat-info"><span class="stat-label">AVAILABLE</span><span class="stat-value">{{ available_books }}</span></div>
+<div class="stat-icon avail-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+</div>
+<div class="stat-card">
+<div class="stat-info"><span class="stat-label">ACTIVE ISSUES</span><span class="stat-value">{{ active_issues }}</span></div>
+<div class="stat-icon issue-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+</div>
+<div class="stat-card">
+<div class="stat-info"><span class="stat-label">OVERDUE</span><span class="stat-value">{{ overdue }}</span></div>
+<div class="stat-icon overdue-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+</div>
+</div>
+<div class="quick-links">
+<a href="{{ url_for('admin_books') }}" class="quick-card">
+<div class="quick-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+<div class="quick-text"><strong>Manage Books</strong><span>Add, edit and remove titles.</span></div>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+</a>
+<a href="{{ url_for('admin_users') }}" class="quick-card">
+<div class="quick-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+<div class="quick-text"><strong>Manage Users</strong><span>{{ total_users }} registered accounts</span></div>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+</a>
+<a href="{{ url_for('admin_issues') }}" class="quick-card">
+<div class="quick-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+<div class="quick-text"><strong>Issue Records</strong><span>{{ total_transactions }} total transactions</span></div>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+</a>
+</div>
+{% endblock %}

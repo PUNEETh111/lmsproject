@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}My Books — NMIT Library{% endblock %}
+{% block content %}
+<div class="page-header">
+<h1 class="page-title" style="font-variant:small-caps">My Books</h1>
+<p class="page-desc">Track active loans and your reading history.</p>
+</div>
+<h2 class="section-title">Active loans ({{ active_loans|length }})</h2>
+{% if active_loans %}
+<div class="loans-grid">
+{% for loan in active_loans %}
+<div class="loan-card">
+<div class="loan-header">
+<div><h3 class="loan-book-title">{{ loan.book_title }}</h3><p class="loan-author">by {{ loan.book_author }}</p></div>
+<span class="status-badge status-active">Active</span>
+</div>
+<div class="loan-dates">
+<div><span class="date-label">ISSUED</span><span class="date-value">{{ loan.issued_at|format_date }}</span></div>
+<div><span class="date-label">DUE</span><span class="date-value">{{ loan.due_date|format_date }}</span></div>
+<div><span class="date-label">RETURNED</span><span class="date-value">—</span></div>
+</div>
+<form method="POST" action="{{ url_for('return_book', issue_id=loan.id) }}">
+<button type="submit" class="btn btn-outline btn-block btn-return">Return book</button>
+</form>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<p class="empty-state">No active loans.</p>
+{% endif %}
+
+<h2 class="section-title" style="margin-top:2.5rem">History ({{ history|length }})</h2>
+{% if history %}
+<div class="loans-grid">
+{% for loan in history %}
+<div class="loan-card loan-card-returned">
+<div class="loan-header">
+<div><h3 class="loan-book-title">{{ loan.book_title }}</h3><p class="loan-author">by {{ loan.book_author }}</p></div>
+<span class="status-badge status-returned">✓ Returned</span>
+</div>
+<div class="loan-dates">
+<div><span class="date-label">ISSUED</span><span class="date-value">{{ loan.issued_at|format_date }}</span></div>
+<div><span class="date-label">DUE</span><span class="date-value">{{ loan.due_date|format_date }}</span></div>
+<div><span class="date-label">RETURNED</span><span class="date-value">{{ loan.returned_at|format_date }}</span></div>
+</div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<p class="empty-state">No reading history yet.</p>
+{% endif %}
+{% endblock %}

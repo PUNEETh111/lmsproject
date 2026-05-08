@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Issues — NMIT Library{% endblock %}
+{% block content %}
+<div class="page-header">
+<span class="page-tag">ADMIN</span>
+<h1 class="page-title">Issue Records</h1>
+<p class="page-desc">Every loan, return, and overdue title in one place.</p>
+</div>
+<div class="filter-tabs">
+<button class="filter-tab active" onclick="filterIssues('all',this)">All ({{ issues|length }})</button>
+<button class="filter-tab" onclick="filterIssues('active',this)">Active ({{ issues|selectattr('status','equalto','active')|list|length }})</button>
+<button class="filter-tab" onclick="filterIssues('overdue',this)">Overdue ({{ issues|selectattr('status','equalto','overdue')|list|length }})</button>
+<button class="filter-tab" onclick="filterIssues('returned',this)">Returned ({{ issues|selectattr('status','equalto','returned')|list|length }})</button>
+</div>
+<div class="table-wrap">
+<table class="data-table">
+<thead><tr><th>BOOK</th><th>USER</th><th>ISSUED</th><th>DUE</th><th>RETURNED</th><th>STATUS</th><th>ACTION</th></tr></thead>
+<tbody>
+{% for issue in issues %}
+<tr data-status="{{ issue.status }}">
+<td>{{ issue.book_title }}</td>
+<td><div>{{ issue.user_name }}<br><small class="text-muted">{{ issue.user_email }}</small></div></td>
+<td>{{ issue.issued_at|format_date }}</td>
+<td>{{ issue.due_date|format_date }}</td>
+<td>{{ issue.returned_at|format_date }}</td>
+<td><span class="status-badge status-{{ issue.status }}">{% if issue.status == 'returned' %}✓ Returned{% elif issue.status == 'active' %}Active{% else %}Overdue{% endif %}</span></td>
+<td>
+{% if issue.status == 'active' %}
+<form method="POST" action="{{ url_for('admin_return_book', issue_id=issue.id) }}" style="display:inline">
+<button type="submit" class="btn btn-sm btn-gold">Return</button>
+</form>
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+<script>
+function filterIssues(status,btn){
+document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+btn.classList.add('active');
+document.querySelectorAll('.data-table tbody tr').forEach(r=>{
+r.style.display=(status==='all'||r.dataset.status===status)?'':'none';
+});
+}
+</script>
+{% endblock %}

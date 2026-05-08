@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Books — NMIT Library{% endblock %}
+{% block content %}
+<div class="page-header">
+<span class="page-tag">ADMIN</span>
+<h1 class="page-title">Books</h1>
+<p class="page-desc">Curate the catalog: add, edit, or remove titles.</p>
+<button class="btn btn-gold" onclick="openModal('addBookModal')">+ Add new book</button>
+</div>
+<div class="table-wrap">
+<table class="data-table">
+<thead><tr><th>TITLE</th><th>AUTHOR</th><th>ISBN</th><th>CATEGORY</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+<tbody>
+{% for book in books %}
+<tr>
+<td>{{ book.title }}</td>
+<td>{{ book.author }}</td>
+<td>{{ book.isbn }}</td>
+<td><span class="cat-badge cat-{{ book.category|lower }}">{{ book.category }}</span></td>
+<td><span class="status-badge {% if book.available %}status-available{% else %}status-issued{% endif %}">{% if book.available %}Available{% else %}Issued{% endif %}</span></td>
+<td class="actions-cell">
+<button class="icon-btn" onclick="openEditModal({{ book.id }}, '{{ book.title }}', '{{ book.author }}', '{{ book.isbn }}', '{{ book.category }}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+<form method="POST" action="{{ url_for('admin_delete_book', book_id=book.id) }}" style="display:inline" onsubmit="return confirm('Delete this book?')">
+<button type="submit" class="icon-btn icon-btn-danger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+</form>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+<!-- Add Book Modal -->
+<div id="addBookModal" class="modal-overlay" onclick="if(event.target===this)closeModal('addBookModal')">
+<div class="modal">
+<h3>Add New Book</h3>
+<form method="POST" action="{{ url_for('admin_add_book') }}">
+<label class="form-label">TITLE</label>
+<input type="text" name="title" required class="form-input">
+<label class="form-label">AUTHOR</label>
+<input type="text" name="author" required class="form-input">
+<label class="form-label">ISBN</label>
+<input type="text" name="isbn" required class="form-input">
+<label class="form-label">CATEGORY</label>
+<select name="category" class="form-input">
+<option value="Science">Science</option>
+<option value="Fiction">Fiction</option>
+<option value="History">History</option>
+<option value="Engineering">Engineering</option>
+<option value="Mathematics">Mathematics</option>
+</select>
+<div class="modal-actions">
+<button type="button" class="btn btn-outline" onclick="closeModal('addBookModal')">Cancel</button>
+<button type="submit" class="btn btn-gold">Add Book</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- Edit Book Modal -->
+<div id="editBookModal" class="modal-overlay" onclick="if(event.target===this)closeModal('editBookModal')">
+<div class="modal">
+<h3>Edit Book</h3>
+<form method="POST" id="editBookForm">
+<label class="form-label">TITLE</label>
+<input type="text" name="title" id="editTitle" required class="form-input">
+<label class="form-label">AUTHOR</label>
+<input type="text" name="author" id="editAuthor" required class="form-input">
+<label class="form-label">ISBN</label>
+<input type="text" name="isbn" id="editIsbn" required class="form-input">
+<label class="form-label">CATEGORY</label>
+<select name="category" id="editCategory" class="form-input">
+<option value="Science">Science</option>
+<option value="Fiction">Fiction</option>
+<option value="History">History</option>
+<option value="Engineering">Engineering</option>
+<option value="Mathematics">Mathematics</option>
+</select>
+<div class="modal-actions">
+<button type="button" class="btn btn-outline" onclick="closeModal('editBookModal')">Cancel</button>
+<button type="submit" class="btn btn-gold">Save Changes</button>
+</div>
+</form>
+</div>
+</div>
+
+<script>
+function openModal(id){document.getElementById(id).classList.add('active')}
+function closeModal(id){document.getElementById(id).classList.remove('active')}
+function openEditModal(id,t,a,i,c){
+document.getElementById('editBookForm').action='/admin/books/edit/'+id;
+document.getElementById('editTitle').value=t;
+document.getElementById('editAuthor').value=a;
+document.getElementById('editIsbn').value=i;
+document.getElementById('editCategory').value=c;
+openModal('editBookModal');
+}
+</script>
+{% endblock %}

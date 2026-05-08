@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Catalog — NMIT Library{% endblock %}
+{% block content %}
+<div class="catalog-header">
+<span class="page-tag" style="text-align:center;display:block">BROWSE</span>
+<h1 class="catalog-title">Library Catalog</h1>
+<p class="catalog-desc">Discover {{ books|length }} curated titles across science, fiction, history and more.</p>
+<form method="GET" class="catalog-search">
+<input type="text" name="search" value="{{ search }}" placeholder="Search by title or author..." class="search-input">
+</form>
+</div>
+<div class="catalog-grid">
+{% for book in books %}
+<div class="book-card">
+<span class="book-status-badge {% if book.available %}badge-available{% else %}badge-unavailable{% endif %}">{% if book.available %}✓ Available{% else %}✕ Unavailable{% endif %}</span>
+<div class="book-icon-wrap"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+<span class="cat-badge cat-{{ book.category|lower }}">{{ book.category }}</span>
+<h3 class="book-card-title">{{ book.title }}</h3>
+<p class="book-card-author">{{ book.author }}</p>
+{% if current_user.role != 'admin' and book.available %}
+<form method="POST" action="{{ url_for('borrow_book', book_id=book.id) }}">
+<button type="submit" class="btn btn-gold btn-block btn-sm">Borrow</button>
+</form>
+{% endif %}
+</div>
+{% endfor %}
+</div>
+{% endblock %}

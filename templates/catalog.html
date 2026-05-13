@@ -17,7 +17,7 @@
 <span class="cat-badge cat-{{ book.category|lower }}">{{ book.category }}</span>
 <h3 class="book-card-title">{{ book.title }}</h3>
 <p class="book-card-author">{{ book.author }}</p>
-{% if current_user.role != 'admin' and book.available %}
+{% if current_user and current_user.role != 'admin' and book.available %}
 <form method="POST" action="{{ url_for('borrow_book', book_id=book.id) }}">
 <button type="submit" class="btn btn-gold btn-block btn-sm">Borrow</button>
 </form>

@@ -149,6 +149,15 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             return redirect(url_for('login'))
+        
+        # Verify user exists in database
+        db = get_db()
+        user = db.execute('SELECT id FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        if not user:
+            session.clear()
+            flash('Your session has expired. Please log in again.', 'info')
+            return redirect(url_for('login'))
+            
         return f(*args, **kwargs)
     return decorated_function
 
@@ -172,8 +181,15 @@ def inject_user():
     """Inject current user data into all templates."""
     user = None
     if 'user_id' in session:
-        db = get_db()
-        user = db.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        try:
+            db = get_db()
+            user = db.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+            if user is None:
+                # Stale session: user exists in cookie but not in database
+                session.clear()
+        except Exception as e:
+            app.logger.error(f"Database error in inject_user: {e}")
+            session.clear()
     return dict(current_user=user)
 
 
@@ -449,42 +465,54 @@ def catalog():
     return render_template('catalog.html', books=books, search=search)
 
 
-@app.route('/catalog/borrow/<int:book_id>', methods=['POST'])
+@app.route('/catalog/borrow/<int:book_id>', methods=['GET', 'POST'])
 @login_required
 def borrow_book(book_id):
+    if request.method == 'GET':
+        return redirect(url_for('catalog'))
+        
     db = get_db()
-    book = db.execute('SELECT * FROM books WHERE id = ?', (book_id,)).fetchone()
-    
-    if not book:
-        flash('Book not found.', 'error')
+    try:
+        book = db.execute('SELECT * FROM books WHERE id = ?', (book_id,)).fetchone()
+        
+        if not book:
+            flash('Book not found.', 'error')
+            return redirect(url_for('catalog'))
+        
+        if not book['available']:
+            flash('This book is currently unavailable.', 'error')
+            return redirect(url_for('catalog'))
+        
+        # Check if user already has this book
+        existing = db.execute(
+            "SELECT id FROM issues WHERE book_id = ? AND user_id = ? AND status = 'active'",
+            (book_id, session['user_id'])
+        ).fetchone()
+        
+        if existing:
+            flash('You already have this book borrowed.', 'error')
+            return redirect(url_for('catalog'))
+        
+        now = datetime.now()
+        due = now + timedelta(days=14)
+        
+        db.execute(
+            'INSERT INTO issues (book_id, user_id, issued_at, due_date, status) VALUES (?, ?, ?, ?, ?)',
+            (book_id, session['user_id'], now.strftime('%Y-%m-%d'), due.strftime('%Y-%m-%d'), 'active')
+        )
+        db.execute('UPDATE books SET available = 0 WHERE id = ?', (book_id,))
+        db.commit()
+        
+        flash(f'Successfully borrowed "{book["title"]}"!', 'success')
+        return redirect(url_for('my_books'))
+    except sqlite3.IntegrityError as e:
+        app.logger.error(f"IntegrityError in borrow_book: {e}")
+        flash('Operation failed. Your session might be stale. Please log in again.', 'error')
+        return redirect(url_for('login'))
+    except Exception as e:
+        app.logger.error(f"Unexpected error in borrow_book: {e}")
+        flash('An unexpected error occurred. Please try again.', 'error')
         return redirect(url_for('catalog'))
-    
-    if not book['available']:
-        flash('This book is currently unavailable.', 'error')
-        return redirect(url_for('catalog'))
-    
-    # Check if user already has this book
-    existing = db.execute(
-        "SELECT id FROM issues WHERE book_id = ? AND user_id = ? AND status = 'active'",
-        (book_id, session['user_id'])
-    ).fetchone()
-    
-    if existing:
-        flash('You already have this book borrowed.', 'error')
-        return redirect(url_for('catalog'))
-    
-    now = datetime.now()
-    due = now + timedelta(days=14)
-    
-    db.execute(
-        'INSERT INTO issues (book_id, user_id, issued_at, due_date, status) VALUES (?, ?, ?, ?, ?)',
-        (book_id, session['user_id'], now.strftime('%Y-%m-%d'), due.strftime('%Y-%m-%d'), 'active')
-    )
-    db.execute('UPDATE books SET available = 0 WHERE id = ?', (book_id,))
-    db.commit()
-    
-    flash(f'Successfully borrowed "{book["title"]}"!', 'success')
-    return redirect(url_for('my_books'))
 
 
 @app.route('/my-books')

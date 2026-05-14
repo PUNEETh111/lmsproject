@@ -139,6 +139,9 @@ main{max-width:1300px;margin:0 auto}
 .auth-switch a:hover{text-decoration:underline}
 .demo-creds{margin-top:1.25rem;padding:1rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.8rem;color:var(--text2);line-height:1.6}
 .demo-creds strong{color:var(--text);display:block;margin-bottom:.25rem}
+.demo-actions{display:flex;flex-direction:column;gap:.35rem;margin-top:.5rem}
+.btn-link{background:none;border:none;padding:0;color:var(--gold);font-size:.8rem;font-weight:500;text-align:left;cursor:pointer;transition:var(--transition);text-decoration:none;display:block;width:fit-content}
+.btn-link:hover{color:var(--gold-hover);text-decoration:underline}
 
 /* ── Catalog ─────────────────────────────────────────────── */
 .catalog-header{text-align:center;margin-bottom:2.5rem}

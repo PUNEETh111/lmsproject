@@ -39,10 +39,19 @@
 <button class="btn btn-outline btn-block" disabled>Continue with Google</button>
 <p class="auth-switch">Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
 <div class="demo-creds">
-<strong>Demo credentials</strong><br>
-Admin: admin@library.com / admin123<br>
-Student: student@library.com / student123
+    <strong>Demo credentials</strong><br>
+    <div class="demo-actions">
+        <button type="button" class="btn-link" onclick="fillForm('admin@library.com', 'admin123')">Admin: admin@library.com</button>
+        <button type="button" class="btn-link" onclick="fillForm('student@library.com', 'student123')">Student: student@library.com</button>
+    </div>
 </div>
+
+<script>
+function fillForm(email, password) {
+    document.querySelector('input[name="email"]').value = email;
+    document.querySelector('input[name="password"]').value = password;
+}
+</script>
 </div>
 </div>
 </div>

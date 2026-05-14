@@ -93,53 +93,59 @@ def init_db():
     ''')
     
     # Check if we need to seed
-    user_count = db.execute('SELECT COUNT(*) FROM users').fetchone()[0]
-    if user_count == 0:
-        # Seed admin user
-        db.execute(
-            'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
-            ('Library Admin', 'admin@library.com',
-             generate_password_hash('admin123'), 'admin')
-        )
-        # Seed student user
-        db.execute(
-            'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
-            ('Demo Student', 'student@library.com',
-             generate_password_hash('student123'), 'student')
-        )
-        
-        # Seed books
-        books = [
-            ('A Brief History of Time', 'Stephen Hawking', '9780553380163', 'Science'),
-            ('The Selfish Gene', 'Richard Dawkins', '9780198788607', 'Science'),
-            ('To Kill a Mockingbird', 'Harper Lee', '9780061120084', 'Fiction'),
-            ('1984', 'George Orwell', '9780451524935', 'Fiction'),
-            ('The Great Gatsby', 'F. Scott Fitzgerald', '9780743273565', 'Fiction'),
-            ('Sapiens: A Brief History of Humankind', 'Yuval Noah Harari', '9780062316097', 'History'),
-            ('Guns, Germs, and Steel', 'Jared Diamond', '9780393317558', 'History'),
-            ('Introduction to Algorithms', 'Thomas H. Cormen', '9780262033848', 'Engineering'),
-            ('Clean Code', 'Robert C. Martin', '9780132350884', 'Engineering'),
-            ('Calculus', 'Michael Spivak', '9780914098911', 'Mathematics'),
-        ]
-        for title, author, isbn, category in books:
+    try:
+        user_count = db.execute('SELECT COUNT(*) FROM users').fetchone()[0]
+        if user_count == 0:
+            # Seed admin user
             db.execute(
-                'INSERT INTO books (title, author, isbn, category) VALUES (?, ?, ?, ?)',
-                (title, author, isbn, category)
+                'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
+                ('Library Admin', 'admin@library.com',
+                 generate_password_hash('admin123'), 'admin')
             )
-        
-        # Seed one active issue (A Brief History of Time issued to Demo Student)
-        student = db.execute('SELECT id FROM users WHERE email = ?', ('student@library.com',)).fetchone()
-        book = db.execute('SELECT id FROM books WHERE isbn = ?', ('9780553380163',)).fetchone()
-        if student and book:
-            now = datetime.now()
-            due = now + timedelta(days=14)
+            # Seed student user
             db.execute(
-                'INSERT INTO issues (book_id, user_id, issued_at, due_date, status) VALUES (?, ?, ?, ?, ?)',
-                (book['id'], student['id'], now.strftime('%Y-%m-%d'), due.strftime('%Y-%m-%d'), 'active')
+                'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
+                ('Demo Student', 'student@library.com',
+                 generate_password_hash('student123'), 'student')
             )
-            db.execute('UPDATE books SET available = 0 WHERE id = ?', (book['id'],))
-        
-        db.commit()
+            
+            # Seed books
+            books = [
+                ('A Brief History of Time', 'Stephen Hawking', '9780553380163', 'Science'),
+                ('The Selfish Gene', 'Richard Dawkins', '9780198788607', 'Science'),
+                ('To Kill a Mockingbird', 'Harper Lee', '9780061120084', 'Fiction'),
+                ('1984', 'George Orwell', '9780451524935', 'Fiction'),
+                ('The Great Gatsby', 'F. Scott Fitzgerald', '9780743273565', 'Fiction'),
+                ('Sapiens: A Brief History of Humankind', 'Yuval Noah Harari', '9780062316097', 'History'),
+                ('Guns, Germs, and Steel', 'Jared Diamond', '9780393317558', 'History'),
+                ('Introduction to Algorithms', 'Thomas H. Cormen', '9780262033848', 'Engineering'),
+                ('Clean Code', 'Robert C. Martin', '9780132350884', 'Engineering'),
+                ('Calculus', 'Michael Spivak', '9780914098911', 'Mathematics'),
+            ]
+            for title, author, isbn, category in books:
+                db.execute(
+                    'INSERT OR IGNORE INTO books (title, author, isbn, category) VALUES (?, ?, ?, ?)',
+                    (title, author, isbn, category)
+                )
+            
+            # Seed one active issue (A Brief History of Time issued to Demo Student)
+            student = db.execute('SELECT id FROM users WHERE email = ?', ('student@library.com',)).fetchone()
+            book = db.execute('SELECT id FROM books WHERE isbn = ?', ('9780553380163',)).fetchone()
+            if student and book:
+                now = datetime.now()
+                due = now + timedelta(days=14)
+                db.execute(
+                    'INSERT INTO issues (book_id, user_id, issued_at, due_date, status) VALUES (?, ?, ?, ?, ?)',
+                    (book['id'], student['id'], now.strftime('%Y-%m-%d'), due.strftime('%Y-%m-%d'), 'active')
+                )
+                db.execute('UPDATE books SET available = 0 WHERE id = ?', (book['id'],))
+            
+            db.commit()
+    except sqlite3.IntegrityError:
+        # Already seeded by another worker
+        pass
+    except Exception as e:
+        print(f"Database initialization error: {e}")
 
 
 # ─── Auth Decorators ────────────────────────────────────────────────────────
@@ -582,7 +588,10 @@ def format_date(value):
 # ─── Initialize & Run ───────────────────────────────────────────────────────
 
 with app.app_context():
-    init_db()
+    try:
+        init_db()
+    except Exception as e:
+        print(f"CRITICAL: Failed to initialize database: {e}")
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

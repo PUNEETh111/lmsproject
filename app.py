@@ -600,13 +600,6 @@ def format_date(value):
         return value
 
 
-@app.errorhandler(404)
-def page_not_found(e):
-    """Custom 404 handler to help debug route mismatches on production."""
-    rules = [f"{rule.rule} ({', '.join(rule.methods)})" for rule in app.url_map.iter_rules()]
-    return f"<h1>404 Not Found</h1><p>The URL <strong>{request.url}</strong> was not found.</p><h3>Registered Routes:</h3><ul><li>" + "</li><li>".join(rules) + "</li></ul>", 404
-
-
 # ─── Initialize & Run ───────────────────────────────────────────────────────
 
 with app.app_context():

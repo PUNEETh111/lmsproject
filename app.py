@@ -13,7 +13,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'nmit-library-secret-key-2026')
-app.config['DATABASE'] = os.path.join(app.root_path, 'library.db')
+# Use /tmp for database if running on Render to ensure write permissions
+if os.environ.get('RENDER'):
+    app.config['DATABASE'] = '/tmp/library.db'
+else:
+    app.config['DATABASE'] = os.path.join(app.root_path, 'library.db')
 
 
 # ─── Database Helpers ───────────────────────────────────────────────────────
@@ -197,6 +201,17 @@ def inject_user():
             app.logger.error(f"Database error in inject_user: {e}")
             session.clear()
     return dict(current_user=user)
+
+
+@app.route('/health')
+def health():
+    """Health check route to verify app is running and database is accessible."""
+    try:
+        db = get_db()
+        db.execute('SELECT 1').fetchone()
+        return jsonify(status='healthy', database='connected'), 200
+    except Exception as e:
+        return jsonify(status='unhealthy', error=str(e)), 500
 
 
 # ─── Auth Routes ────────────────────────────────────────────────────────────
